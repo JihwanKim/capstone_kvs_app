@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/KVS.iml" filepath="$PROJECT_DIR$/KVS.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/capstone_kvs_app.iml" filepath="$PROJECT_DIR$/capstone_kvs_app.iml" />
     </modules>
   </component>
 </project>
