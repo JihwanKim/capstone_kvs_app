@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.user.kvs">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/caricon1"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/caricon1"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SecondActivity"
+            android:label="Second 액티비티">
+        </activity>
+
+        <activity
+            android:name=".ThirdActivity"
+            android:label="Third 액티비티">
+        </activity>
+
+        <activity
+            android:name=".FourthActivity"
+            android:label="기록 확인">
+        </activity>
+    </application>
+
+</manifest>
