@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-
+//한번더 확인만
 public class SecondActivity extends Activity {
     Button btn4;        //시작버튼의 새로운 액티비티에 있는 돌아가기 버튼
     Button btn11;       //실시간 모니터링 시작 버튼
