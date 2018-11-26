@@ -14,6 +14,7 @@ public class ThirdActivity extends Activity {
     Button btn10;   ////사용방법버튼의 새로운 액티비티에 있는 돌아가기(다음화면) 버튼
     ViewFlipper vFlipper; //뷰플리퍼
 
+    // 변경사항이다 바보야
     protected void onCreate(Bundle saveInstanceState) {
         super.onCreate(saveInstanceState);
         setContentView(R.layout.third_main);
