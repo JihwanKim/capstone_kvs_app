@@ -1,50 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-//시작버튼 시 열리는 새로운 액티비티
+<FrameLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <SurfaceView
+        android:id="@+id/camera_preview_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
         <Button
-            android:id="@+id/button11"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="실시간 모니터링 시작" />
-
-        <Button
-            android:id="@+id/button12"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="실시간 모니터링 종료" />
-
-        <Button
-            android:id="@+id/button4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="돌아가기" />
-
-        <TextView
-            android:id="@+id/textView"
+            android:id="@+id/button_main_capture"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="30dp"
-            android:textColor="#FF0000"
-            android:layout_margin="10dp"
-            android:text="온전한 종료를 위해서 " />
+            android:layout_weight="1"
+            android:text="Start" />
 
-        <TextView
-            android:id="@+id/textView1"
+        <Button
+            android:id="@+id/button_main_stop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="30dp"
-            android:textColor="#FF0000"
-            android:layout_margin="10dp"
-            android:text="실시간 모니터링을 종료하십시오." />
+            android:layout_weight="1"
+            android:text="Stop" />
+
+        <Button
+            android:id="@+id/button_main_exit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Exit" />
 
     </LinearLayout>
 
-</android.support.constraint.ConstraintLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:textSize="20dp"
+        android:textColor="#FF0000"
+        android:text="온전한 종료를 위해 Stop -> Exit 해주십시오." />
+
+</FrameLayout>
