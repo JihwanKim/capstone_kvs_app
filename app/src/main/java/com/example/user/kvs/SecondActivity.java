@@ -11,12 +11,16 @@ import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Environment;
+import android.speech.tts.TextToSpeech;
+
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.hardware.Camera.Size;
 import android.util.Log;
@@ -27,18 +31,28 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Toast;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class SecondActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback  {
+public class SecondActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
+    private TextToSpeech textToSpeech1;      //음성출력
+    private TextToSpeech textToSpeech2;
+    int tog = 0;
+
+    static TimerTask tt;
 
     private static final String TAG = "android_camera_example";
     private static final int PERMISSIONS_REQUEST_CODE = 100;
@@ -64,29 +78,70 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
 
         setContentView(R.layout.second_main);
 
+        final Button button = findViewById(R.id.button_main_capture);
+        final Button button1 = findViewById(R.id.button_main_stop);
+        final Button button2 = findViewById(R.id.button_main_exit);
+
+        //얼굴인식을 위한 음성출력
+        textToSpeech1 = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                String myText1 = "얼굴인식을 위해 화면에 얼굴을 위치시킨 후";
+                String myText2 = "시작버튼을 눌러주십시오.";
+                textToSpeech1.speak(myText1, TextToSpeech.QUEUE_FLUSH, null);
+                textToSpeech1.speak(myText2, TextToSpeech.QUEUE_ADD, null);
+            }
+        });
+        textToSpeech2 = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) { //Speech()
+                    //사용할 언어를 설정
+                    int result = textToSpeech2.setLanguage(Locale.KOREA);
+                    //언어 데이터가 없거나 혹은 언어가 지원하지 않으면...
+                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Toast.makeText(SecondActivity.this, "이 언어는 지원하지 않습니다.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        button2.setEnabled(true);
+                        //음성 톤
+                        textToSpeech2.setPitch(0.7f);
+                        //읽는 속도
+                        textToSpeech2.setSpeechRate(1.2f);
+                    }
+                }
+            }
+        });
+
         mLayout = findViewById(R.id.layout_main);
         surfaceView = findViewById(R.id.camera_preview_main);
 
         // 런타임 퍼미션 완료될때 까지 화면에서 보이지 않게 해야합니다.
         surfaceView.setVisibility(View.GONE);
 
-        final Button button = findViewById(R.id.button_main_capture);
-        final Button button1 = findViewById(R.id.button_main_stop);
-        final Button button2 = findViewById(R.id.button_main_exit);
-
 
         final Timer timer = new Timer();        //3초 주기로 자동촬영을 위한 타이머메소드 구현
-        final TimerTask tt = new TimerTask() {
+        /*final TimerTask tt = new TimerTask() {
             @Override
             public void run() {
                 mCameraPreview.takePicture();   //직접적으로 사진을 촬영하는 메소드임
             }
-        };
+        };*/
 
-        button.setOnClickListener(new View.OnClickListener() {
+        surfaceView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                timer.schedule(tt, 0, 3000);        //run()메소드가 주기적으로 실행됨. 시작버튼 시 3초주기 자동사진촬영
+            }
+        });
+
+
+        button.setOnClickListener(new View.OnClickListener() {      //시작 버튼
+            @Override
+            public void onClick(View v) {
+                tog = 1;
+                tt = timerTaskMaker();              //일시적으로 계속해서 타이머를 생성해주기.
+                timer.schedule(tt, 0, 3000);    //타이머를 계속만들어주지않으면 그냥 타이머텍스크 캔슬 시에 없어져서 오류발생함.
+
+                //timer.schedule(tt, 0, 3000);        //run()메소드가 주기적으로 실행됨. 시작버튼 시 3초주기 자동사진촬영
                 //mCameraPreview.takePicture();     //직접적인 사진촬영 메소드.
             }
         });
@@ -94,15 +149,20 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                tog = 0;
                 tt.cancel();            //종료 버튼 시 3초주기 자동사진촬영 종료
-
             }
         });
 
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                if(tog == 1){
+                    Speech();
+                }
+                else{
+                    finish();
+                }
             }
         });
 
@@ -112,7 +172,7 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
             int writeExternalStoragePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
 
-            if ( cameraPermission == PackageManager.PERMISSION_GRANTED
+            if (cameraPermission == PackageManager.PERMISSION_GRANTED
                     && writeExternalStoragePermission == PackageManager.PERMISSION_GRANTED) {
                 startCamera();
 
@@ -158,6 +218,46 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
 
 
     }
+
+    public TimerTask timerTaskMaker(){
+        TimerTask tempTask = new TimerTask() {
+            @Override
+            public void run() {
+                mCameraPreview.takePicture();
+            }
+        };
+        return tempTask;
+    }
+
+    //음성출력을 위한 스피치메소드
+    private void Speech() {
+        String text = "온전한 종료를 위한 멈춤버튼을 누른 후에 나가기버튼을 눌러주십시오.";
+        // QUEUE_FLUSH: Queue 값을 초기화한 후 값을 넣는다.
+        // QUEUE_ADD: 현재 Queue에 값을 추가하는 옵션이다.
+        // API 21
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Log.d("speech", "Text to speech!");
+            textToSpeech2.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+            // API 20
+        }
+        else
+            textToSpeech2.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+
+    }
+    //얼굴인식을 위한 음성 출력
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (textToSpeech1 != null) {
+            textToSpeech1.stop();
+            textToSpeech1.shutdown();
+        }
+        if (textToSpeech2 != null) {
+            textToSpeech2.stop();
+            textToSpeech2.shutdown();
+        }
+    }
+
     void startCamera(){
 
         // Create the Preview view and set it as the content of this Activity.
@@ -214,14 +314,14 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
 
         }
 
-
     }
 
 }
 
 // 카메라에서 가져온 영상을 보여주는 카메라 프리뷰 클래스
 class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
-
+    //private byte[] data;
+    //DataOutputStream dos;
     private final String TAG = "CameraPreview";
 
     private int mCameraID;
@@ -518,8 +618,8 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             //byte array를 bitmap으로 변환
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-            Bitmap bitmap = BitmapFactory.decodeByteArray( data, 0, data.length, options);
-
+            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+            //CameraPreview.this.data = data;
 
             //이미지를 디바이스 방향으로 회전
             Matrix matrix = new Matrix();
@@ -528,11 +628,12 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
             //bitmap을 byte array로 변환
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 10, stream);
             byte[] currentData = stream.toByteArray();
 
             //파일로 저장
             new SaveImageTask().execute(currentData);
+            //doFileUpload();
 
         }
     };
@@ -564,7 +665,6 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length + " to "
                         + outputFile.getAbsolutePath());
 
-
                 mCamera.startPreview();
 
 
@@ -594,4 +694,51 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         }
 
     }
+  /*  public void doFileUpload() {
+        //DataOutputStream dos = null;
+        try {
+            URL url = new URL("http://kvscapstone-env.vbt2ehepeh.ap-northeast-2.elasticbeanstalk.com/picture/");
+            Log.i(TAG, "http://localhost/image_upload.jsp" );
+            String lineEnd = "\r\n";
+            String twoHyphens = "--";
+            String boundary = "*****";
+            // open connection
+            HttpURLConnection con = (HttpURLConnection)url.openConnection();
+            con.setDoInput(true); //input 허용
+            con.setDoOutput(true);  // output 허용
+            con.setUseCaches(false);   // cache copy를 허용하지 않는다.
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Connection", "Keep-Alive");
+            con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+
+            // write data
+            dos = new DataOutputStream(con.getOutputStream());
+            Log.i(TAG, "Open OutputStream" );
+            dos.writeBytes(twoHyphens + boundary + lineEnd);
+
+
+            // 파일 전송시 파라메터명은 file1 파일명은 camera.jpg로 설정하여 전송
+            dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\"camera.jpg\"" +
+                    lineEnd);
+
+            dos.writeBytes(lineEnd);
+            dos.write(data,0,data.length);
+            Log.i(TAG, data.length+"bytes written");
+            dos.writeBytes(lineEnd);
+            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+            dos.flush(); // finish upload...
+            Log.d("@@@", "file upload");
+
+        } catch (Exception e) {
+            Log.i(TAG, "exception " + e.getMessage());
+            // TODO: handle exception
+        }
+        Log.i(TAG, data.length+"bytes written successed ... finish!!" );
+        try {
+            if (dos != null){
+                dos.close();
+            }
+            } catch(Exception e){}
+
+    }*/
 }

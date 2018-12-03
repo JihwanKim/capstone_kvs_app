@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     Button btn0;    //시작 버튼
@@ -15,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
     Button btn2;    //기록 버튼
     Button btn3;    //끝내기 버튼
     ImageView img;  //이미지 뷰
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,5 +64,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
+
     }
 }
