@@ -15,7 +15,7 @@
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             app:srcCompat="@drawable/logo"
             android:layout_weight="1" />
         <TextView
@@ -24,7 +24,6 @@
             android:layout_height="wrap_content"
             android:textSize="30dp"
             android:textColor="#FF0000"
-            android:layout_margin="10dp"
             android:text="운전자의 안전을 위해" />
         <TextView
             android:id="@+id/textView1"
@@ -32,15 +31,14 @@
             android:layout_height="wrap_content"
             android:textSize="30dp"
             android:textColor="#FF0000"
-            android:layout_margin="10dp"
             android:text="KVS가 자체 개발한" />
+
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="30dp"
             android:textColor="#FF0000"
-            android:layout_margin="10dp"
             android:text="운전자 상태 감지 서비스입니다." />
 
         <Button
