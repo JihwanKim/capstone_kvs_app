@@ -9,7 +9,6 @@ import android.widget.ImageView;
 
 public class MainActivity extends AppCompatActivity {
     Button btn0;    //시작 버튼
-    Button btn1;    //사용 방법 버튼
     Button btn6;    //사용자 설정 버튼
     Button btn2;    //기록 버튼
     Button btn3;    //끝내기 버튼
@@ -22,7 +21,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         btn0 = (Button)findViewById(R.id.button);
-        btn1 = (Button)findViewById(R.id.button1);
         btn2 = (Button)findViewById(R.id.button2);
         btn3 = (Button)findViewById(R.id.button3);
         btn6 = (Button)findViewById(R.id.button6);
@@ -34,14 +32,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, SecondActivity.class);
                 startActivity(intent);
-            }
-        });
-        //사용 방법 버튼에 대한 리스너
-        btn1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent1 = new Intent(MainActivity.this, ThirdActivity.class);
-                startActivity(intent1);
             }
         });
         //기록 버튼에 대한 리스너

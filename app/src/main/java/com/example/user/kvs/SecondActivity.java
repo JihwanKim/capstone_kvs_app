@@ -31,7 +31,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 
 
 import java.io.ByteArrayOutputStream;
@@ -40,17 +57,21 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+
 public class SecondActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private TextToSpeech textToSpeech1;      //음성출력
     private TextToSpeech textToSpeech2;
     int tog = 0;
+
+    String myResponse;     //결과값
 
     static TimerTask tt;
 
@@ -126,12 +147,6 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
                 mCameraPreview.takePicture();   //직접적으로 사진을 촬영하는 메소드임
             }
         };*/
-
-        surfaceView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            }
-        });
 
 
         button.setOnClickListener(new View.OnClickListener() {      //시작 버튼
@@ -215,8 +230,36 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
             });
             snackbar.show();
         }
+        final TextView text = findViewById(R.id.textview);
+        //만들어진 결과값을 받아오는 부분(myRequest가 결과값들임)
+        OkHttpClient client = new OkHttpClient();
+        String url = "http://kvscapstone-env.vbt2ehepeh.ap-northeast-2.elasticbeanstalk.com/picture/2018-12-31T10:20:00?phone_number=01065891249";
 
+        Request request = new Request.Builder().url(url).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                Log.i("test_http", String.valueOf(e.getMessage()));
 
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    myResponse = response.body().string();      //이 String 값을 json 변환해야함.
+
+                    SecondActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.i("test_http", "run in main");
+                            text.setText(myResponse);
+                        }
+                    });
+                }
+
+            }
+        });
     }
 
     public TimerTask timerTaskMaker(){

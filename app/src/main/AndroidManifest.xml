@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -22,11 +23,6 @@
         <activity
             android:name=".SecondActivity"
             android:label="Second 액티비티">
-        </activity>
-
-        <activity
-            android:name=".ThirdActivity"
-            android:label="Third 액티비티">
         </activity>
 
         <activity

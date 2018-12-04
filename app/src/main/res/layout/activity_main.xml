@@ -48,12 +48,6 @@
             android:text="시작 하기" />
 
         <Button
-            android:id="@+id/button1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="사용 방법"></Button>
-
-        <Button
             android:id="@+id/button6"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
