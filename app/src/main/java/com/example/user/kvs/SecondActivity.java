@@ -153,7 +153,7 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
             public void onClick(View v) {
                 tog = 1;
                 tt = timerTaskMaker();              //일시적으로 계속해서 타이머를 생성해주기.
-                timer.schedule(tt, 0, 2500);    //타이머를 계속만들어주지않으면 그냥 타이머텍스크 캔슬 시에 없어져서 오류발생함.
+                timer.schedule(tt, 0, 5000);    //타이머를 계속만들어주지않으면 그냥 타이머텍스크 캔슬 시에 없어져서 오류발생함.
 
                 //timer.schedule(tt, 0, 3000);        //run()메소드가 주기적으로 실행됨. 시작버튼 시 3초주기 자동사진촬영
                 //mCameraPreview.takePicture();     //직접적인 사진촬영 메소드.
@@ -741,7 +741,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 Double confidence = jObject.getDouble("Confidence");
 
                 if("ANGRY".equals(type)){
-                    if(confidence >= 25){
+                    if(confidence >= 0){
                         new KVSSpeech(this.getContext(),"화난거야? 화났어? 정말?");
 
                         //우선 화난표정 컨피던스값 0이상일때라 동작이 무조건 되어야되거든?
