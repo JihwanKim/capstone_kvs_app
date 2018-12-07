@@ -78,8 +78,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
 public class SecondActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
-    private TextToSpeech textToSpeech1;      //음성출력
-    private TextToSpeech textToSpeech2;
+//    private TextToSpeech textToSpeech1;      //음성출력
+//    private TextToSpeech textToSpeech2;
     int tog = 0;
 
     static TimerTask tt;
@@ -111,36 +111,26 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
         final Button button = findViewById(R.id.button_main_capture);
         final Button button1 = findViewById(R.id.button_main_stop);
         final Button button2 = findViewById(R.id.button_main_exit);
-
-        //얼굴인식을 위한 음성출력
-        textToSpeech1 = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                String myText1 = "얼굴인식을 위해 화면에 얼굴을 위치시킨 후";
-                String myText2 = "시작버튼을 눌러주십시오.";
-                textToSpeech1.speak(myText1, TextToSpeech.QUEUE_FLUSH, null);
-                textToSpeech1.speak(myText2, TextToSpeech.QUEUE_ADD, null);
-            }
-        });
-        textToSpeech2 = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if (status == TextToSpeech.SUCCESS) { //Speech()
-                    //사용할 언어를 설정
-                    int result = textToSpeech2.setLanguage(Locale.KOREA);
-                    //언어 데이터가 없거나 혹은 언어가 지원하지 않으면...
-                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                        Toast.makeText(SecondActivity.this, "이 언어는 지원하지 않습니다.", Toast.LENGTH_SHORT).show();
-                    } else {
-                        button2.setEnabled(true);
-                        //음성 톤
-                        textToSpeech2.setPitch(0.7f);
-                        //읽는 속도
-                        textToSpeech2.setSpeechRate(1.2f);
-                    }
-                }
-            }
-        });
+        new KVSSpeech(this,"얼굴인식을 위해 화면에 얼굴을 위치시킨 후 시작버튼을 눌러주십시오.");
+//        textToSpeech2 = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+//            @Override
+//            public void onInit(int status) {
+//                if (status == TextToSpeech.SUCCESS) { //Speech()
+//                    //사용할 언어를 설정
+//                    int result = textToSpeech2.setLanguage(Locale.KOREA);
+//                    //언어 데이터가 없거나 혹은 언어가 지원하지 않으면...
+//                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+//                        Toast.makeText(SecondActivity.this, "이 언어는 지원하지 않습니다.", Toast.LENGTH_SHORT).show();
+//                    } else {
+//                        button2.setEnabled(true);
+//                        //음성 톤
+//                        textToSpeech2.setPitch(0.7f);
+//                        //읽는 속도
+//                        textToSpeech2.setSpeechRate(1.2f);
+//                    }
+//                }
+//            }
+//        });
 
         mLayout = findViewById(R.id.layout_main);
         surfaceView = findViewById(R.id.camera_preview_main);
@@ -253,31 +243,21 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
 
     //음성출력을 위한 스피치메소드
     private void Speech() {
-        String text = "온전한 종료를 위한 멈춤버튼을 누른 후에 나가기버튼을 눌러주십시오.";
-        // QUEUE_FLUSH: Queue 값을 초기화한 후 값을 넣는다.
-        // QUEUE_ADD: 현재 Queue에 값을 추가하는 옵션이다.
-        // API 21
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Log.d("speech", "Text to speech!");
-            textToSpeech2.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
-            // API 20
-        }
-        else
-            textToSpeech2.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-
+        new KVSSpeech(this,"온전한 종료를 위한 멈춤버튼을 누른 후에 나가기버튼을 눌러주십시오.");
     }
+
     //얼굴인식을 위한 음성 출력
     @Override
     protected void onStop() {
         super.onStop();
-        if (textToSpeech1 != null) {
-            textToSpeech1.stop();
-            textToSpeech1.shutdown();
-        }
-        if (textToSpeech2 != null) {
-            textToSpeech2.stop();
-            textToSpeech2.shutdown();
-        }
+//        if (textToSpeech1 != null) {
+//            textToSpeech1.stop();
+//            textToSpeech1.shutdown();
+//        }
+//        if (textToSpeech2 != null) {
+//            textToSpeech2.stop();
+//            textToSpeech2.shutdown();
+//        }
     }
 
     void startCamera(){
@@ -657,7 +637,6 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
 
     private class SaveImageTask extends AsyncTask<byte[], Void, Void> {
-
         @Override
         protected Void doInBackground(byte[]... data) {
             FileOutputStream outStream = null;
@@ -762,7 +741,8 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 Double confidence = jObject.getDouble("Confidence");
 
                 if("ANGRY".equals(type)){
-                    if(confidence >= 0){
+                    if(confidence >= 25){
+                        new KVSSpeech(this.getContext(),"화난거야? 화났어? 정말?");
 
                         //우선 화난표정 컨피던스값 0이상일때라 동작이 무조건 되어야되거든?
                         //여기다가 한번 하나 구현해서 확인해주셍
