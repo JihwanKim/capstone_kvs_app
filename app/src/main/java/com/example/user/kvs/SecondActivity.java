@@ -40,13 +40,24 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.w3c.dom.Text;
+
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
@@ -70,8 +81,6 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
     private TextToSpeech textToSpeech1;      //음성출력
     private TextToSpeech textToSpeech2;
     int tog = 0;
-
-    String myResponse;     //결과값
 
     static TimerTask tt;
 
@@ -154,7 +163,7 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
             public void onClick(View v) {
                 tog = 1;
                 tt = timerTaskMaker();              //일시적으로 계속해서 타이머를 생성해주기.
-                timer.schedule(tt, 0, 3000);    //타이머를 계속만들어주지않으면 그냥 타이머텍스크 캔슬 시에 없어져서 오류발생함.
+                timer.schedule(tt, 0, 2500);    //타이머를 계속만들어주지않으면 그냥 타이머텍스크 캔슬 시에 없어져서 오류발생함.
 
                 //timer.schedule(tt, 0, 3000);        //run()메소드가 주기적으로 실행됨. 시작버튼 시 3초주기 자동사진촬영
                 //mCameraPreview.takePicture();     //직접적인 사진촬영 메소드.
@@ -219,7 +228,6 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
 
         }
         else {
-
             final Snackbar snackbar = Snackbar.make(mLayout, "디바이스가 카메라를 지원하지 않습니다.",
                     Snackbar.LENGTH_INDEFINITE);
             snackbar.setAction("확인", new View.OnClickListener() {
@@ -230,36 +238,7 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
             });
             snackbar.show();
         }
-        final TextView text = findViewById(R.id.textview);
         //만들어진 결과값을 받아오는 부분(myRequest가 결과값들임)
-        OkHttpClient client = new OkHttpClient();
-        String url = "http://kvscapstone-env.vbt2ehepeh.ap-northeast-2.elasticbeanstalk.com/picture/2018-12-31T10:20:00?phone_number=01065891249";
-
-        Request request = new Request.Builder().url(url).build();
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                Log.i("test_http", String.valueOf(e.getMessage()));
-
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    myResponse = response.body().string();      //이 String 값을 json 변환해야함.
-
-                    SecondActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.i("test_http", "run in main");
-                            text.setText(myResponse);
-                        }
-                    });
-                }
-
-            }
-        });
     }
 
     public TimerTask timerTaskMaker(){
@@ -358,11 +337,12 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
         }
 
     }
-
 }
 
 // 카메라에서 가져온 영상을 보여주는 카메라 프리뷰 클래스
 class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
+    private String recogdata;
+    private String img_path;
     //private byte[] data;
     //DataOutputStream dos;
     private final String TAG = "CameraPreview";
@@ -399,11 +379,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         // SurfaceHolder.Callback를 등록하여 surface의 생성 및 해제 시점을 감지
         mHolder = mSurfaceView.getHolder();
         mHolder.addCallback(this);
-
     }
-
-
-
 
 
     @Override
@@ -419,7 +395,6 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
         }
     }
-
 
 
     @Override
@@ -494,7 +469,6 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         try {
 
             mCamera.setPreviewDisplay(holder);
-
 
             // Important: Call startPreview() to start updating the preview
             // surface. Preview must be started before you can take a picture.
@@ -671,12 +645,11 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
             //bitmap을 byte array로 변환
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 10, stream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 30, stream);
             byte[] currentData = stream.toByteArray();
 
             //파일로 저장
             new SaveImageTask().execute(currentData);
-            //doFileUpload();
 
         }
     };
@@ -699,11 +672,14 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
                 String fileName = String.format("%d.jpg", System.currentTimeMillis());
                 File outputFile = new File(path, fileName);
+                Log.d("test", path + "/"+ fileName);
 
+                img_path = path +"/" + fileName;
                 outStream = new FileOutputStream(outputFile);
                 outStream.write(data[0]);
                 outStream.flush();
                 outStream.close();
+                goSend();   //php
 
                 Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length + " to "
                         + outputFile.getAbsolutePath());
@@ -737,51 +713,69 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         }
 
     }
-  /*  public void doFileUpload() {
-        //DataOutputStream dos = null;
-        try {
-            URL url = new URL("http://kvscapstone-env.vbt2ehepeh.ap-northeast-2.elasticbeanstalk.com/picture/");
-            Log.i(TAG, "http://localhost/image_upload.jsp" );
-            String lineEnd = "\r\n";
-            String twoHyphens = "--";
-            String boundary = "*****";
-            // open connection
-            HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            con.setDoInput(true); //input 허용
-            con.setDoOutput(true);  // output 허용
-            con.setUseCaches(false);   // cache copy를 허용하지 않는다.
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Connection", "Keep-Alive");
-            con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
 
-            // write data
-            dos = new DataOutputStream(con.getOutputStream());
-            Log.i(TAG, "Open OutputStream" );
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
+    private void goSend(){
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("file","origianl_photo.jpg", RequestBody.create(MultipartBody.FORM, new File(img_path)))
+                .build();
 
+        Request request = new Request.Builder()
+                .url("http://kvs.j-confiance.io/picture?phone_number=01085414764")
+                .post(requestBody)
+                .build();
 
-            // 파일 전송시 파라메터명은 file1 파일명은 camera.jpg로 설정하여 전송
-            dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\"camera.jpg\"" +
-                    lineEnd);
+        OkHttpClient client = new OkHttpClient();
 
-            dos.writeBytes(lineEnd);
-            dos.write(data,0,data.length);
-            Log.i(TAG, data.length+"bytes written");
-            dos.writeBytes(lineEnd);
-            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-            dos.flush(); // finish upload...
-            Log.d("@@@", "file upload");
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
 
-        } catch (Exception e) {
-            Log.i(TAG, "exception " + e.getMessage());
-            // TODO: handle exception
-        }
-        Log.i(TAG, data.length+"bytes written successed ... finish!!" );
-        try {
-            if (dos != null){
-                dos.close();
             }
-            } catch(Exception e){}
 
-    }*/
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                recogdata = response.body().string();
+                doJSONParser();
+                //Log.d(TAG, "onResponse: " + recogdata);
+            }
+        });
+    }
+    void doJSONParser(){
+        StringBuffer sb = new StringBuffer();
+
+        String str = recogdata;
+
+        try {
+            JSONObject jarray = new JSONObject(str).getJSONObject("body").getJSONArray("FaceDetails")
+                    .getJSONObject(0);   // JSONArray 생성
+            JSONArray emotion = jarray.getJSONArray("Emotions");
+            JSONObject pose = jarray.getJSONObject("Pose");
+            Double roll = pose.getDouble("Roll");
+            Double yaw = pose.getDouble("Yaw");
+            Double pitch = pose.getDouble("Pitch");
+//            JSONArray jarray1 = new JSONObject(str).getJSONObject("body").getJSONArray("FaceDetails")
+//                    .getJSONObject(0).getJSONArray("Emotions");   // JSONArray 생성
+            for(int i=0; i < emotion.length(); i++){
+                JSONObject jObject = emotion.getJSONObject(i);  // JSONObject 추출
+                String type = jObject.getString("Type");
+                Double confidence = jObject.getDouble("Confidence");
+
+                if("ANGRY".equals(type)){
+                    if(confidence >= 0){
+
+                        //우선 화난표정 컨피던스값 0이상일때라 동작이 무조건 되어야되거든?
+                        //여기다가 한번 하나 구현해서 확인해주셍
+                        ///////////////////////////////////////////////////////
+                    }
+
+                }
+
+            }
+            //tv.setText(sb.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    } // end doJSONParser()
+
 }
