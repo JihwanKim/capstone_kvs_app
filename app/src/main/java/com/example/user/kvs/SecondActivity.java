@@ -153,7 +153,7 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
             public void onClick(View v) {
                 tog = 1;
                 tt = timerTaskMaker();              //일시적으로 계속해서 타이머를 생성해주기.
-                timer.schedule(tt, 0, 4000);    //타이머를 계속만들어주지않으면 그냥 타이머텍스크 캔슬 시에 없어져서 오류발생함.
+                timer.schedule(tt, 0, 500);    //타이머를 계속만들어주지않으면 그냥 타이머텍스크 캔슬 시에 없어져서 오류발생함.
 
                 //timer.schedule(tt, 0, 3000);        //run()메소드가 주기적으로 실행됨. 시작버튼 시 3초주기 자동사진촬영
                 //mCameraPreview.takePicture();     //직접적인 사진촬영 메소드.
@@ -585,7 +585,11 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
     public void takePicture(){
 
-        mCamera.takePicture(shutterCallback, rawCallback, jpegCallback);
+        try {
+            mCamera.takePicture(shutterCallback, rawCallback, jpegCallback);
+        }catch(Exception e){
+
+        }
     }
 
 
