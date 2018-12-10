@@ -153,7 +153,7 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
             public void onClick(View v) {
                 tog = 1;
                 tt = timerTaskMaker();              //일시적으로 계속해서 타이머를 생성해주기.
-                timer.schedule(tt, 0, 500);    //타이머를 계속만들어주지않으면 그냥 타이머텍스크 캔슬 시에 없어져서 오류발생함.
+                timer.schedule(tt, 0, 3000);    //타이머를 계속만들어주지않으면 그냥 타이머텍스크 캔슬 시에 없어져서 오류발생함.
 
                 //timer.schedule(tt, 0, 3000);        //run()메소드가 주기적으로 실행됨. 시작버튼 시 3초주기 자동사진촬영
                 //mCameraPreview.takePicture();     //직접적인 사진촬영 메소드.
@@ -726,19 +726,40 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     }
     int tog1 = 0;
     int tog2 = 0;
+    int tog3 = 0;
     void doJSONParser(){
         StringBuffer sb = new StringBuffer();
         String str = recogdata;
 
         try {
-            JSONObject jarray = new JSONObject(str).getJSONObject("body").getJSONArray("FaceDetails")
-                    .getJSONObject(0);   // JSONArray 생성
+            Double surprisedconfidence = 0.0;
+            Double calmconfidence = 0.0;
+            JSONObject jarray = new JSONObject(str).getJSONObject("body").getJSONArray("FaceDetails").getJSONObject(0);   // JSONArray 생성
+            JSONObject eyesopen = jarray.getJSONObject("EyesOpen");
             JSONArray emotion = jarray.getJSONArray("Emotions");
             JSONObject pose = jarray.getJSONObject("Pose");
-            Double roll = pose.getDouble("Roll");
-            Double yaw = pose.getDouble("Yaw");
-            Double pitch = pose.getDouble("Pitch");
-            if(yaw > 35.0 || yaw < -35.0){      //좌우전방주시태만
+
+            //눈 상태
+            String eyesopentype = eyesopen.getString("Value");
+            Double eyesopenconfidence = eyesopen.getDouble("Confidence");
+
+            //전방주시
+            Double yaw = pose.getDouble("Yaw");         //좌우
+            Double pitch = pose.getDouble("Pitch");     //위아래
+
+            for(int i = 0; i < emotion.length(); i++){  //이모션내부 배열에서 놀람, 차분함값 뽑아내기
+                JSONObject jObject = emotion.getJSONObject(i);
+                String type = jObject.getString("Type");
+                if("SURPRISED".equals(type)){
+                    surprisedconfidence = jObject.getDouble("Confidence");
+                }
+                else if("CALM".equals(type)){
+                    calmconfidence = jObject.getDouble("Confidence");
+                }
+            }
+
+            //좌우전방주시태만
+            if(yaw > 35.0 || yaw < -35.0){
                 tog1++;
                 if(tog1 == 2){
                     new KVSSpeech(this.getContext(),"전방을 주시해 주십시오.");
@@ -749,32 +770,36 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 tog1 = 0;
             }
 
-            if(pitch < 0){                          //아래전방주시태만
+            //아래전방주시태만
+            if(pitch < 0){
                 tog2++;
                 if(tog2 == 2){
-                    new KVSSpeech(this.getContext(),"전방을 주시해 주십시오. 하나");
+                    new KVSSpeech(this.getContext(),"운전중에 주무시는 건가요? 전방을 주시해야합니다.");
                     tog2 = 0;
                 }
             }
             else{
                 tog2 = 0;
             }
-//            JSONArray jarray1 = new JSONObject(str).getJSONObject("body").getJSONArray("FaceDetails")
-//                    .getJSONObject(0).getJSONArray("Emotions");   // JSONArray 생성
-            for(int i=0; i < emotion.length(); i++){
-                JSONObject jObject = emotion.getJSONObject(i);  // JSONObject 추출
-                String type = jObject.getString("Type");
-                Double confidence = jObject.getDouble("Confidence");
 
-                if("ANGRY".equals(type)){
-                    if(confidence >= 25){
-                        new KVSSpeech(this.getContext(),"화난거야? 화났어? 정말?");
-
-                    }
-
-                }
-
+            //보복운전 상태감지
+            if(surprisedconfidence >= 80 && calmconfidence <= 20){
+                new KVSSpeech(this.getContext(),"보복운전은 심신건강에 해롭습니다.");
             }
+
+            //졸음 운전 상태
+            if ("false".equals(eyesopentype) &&  eyesopenconfidence >= 99) {
+                tog3++;
+                if(tog3 == 3){
+                    new KVSSpeech(this.getContext(),"졸음운전은 지옥으로 가는 지름길입니다.");
+                    tog3 = 0;
+                }
+            }
+            else{
+                tog3 = 0;
+            }
+
+
 
         } catch (JSONException e) {
             e.printStackTrace();
