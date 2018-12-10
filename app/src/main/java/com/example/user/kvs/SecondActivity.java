@@ -323,8 +323,6 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
 class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     private String recogdata;
     private String img_path;
-    //private byte[] data;
-    //DataOutputStream dos;
     private final String TAG = "CameraPreview";
 
     private int mCameraID;
@@ -727,13 +725,17 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     int tog1 = 0;
     int tog2 = 0;
     int tog3 = 0;
+
+    Double surprisedconfidence = 0.0;
+    Double calmconfidence = 0.0;
+    Double happyconfidence = 0.0;
+    Double angryconfidence = 0.0;
+    Double sadconfidence = 0.0;
     void doJSONParser(){
         StringBuffer sb = new StringBuffer();
         String str = recogdata;
 
         try {
-            Double surprisedconfidence = 0.0;
-            Double calmconfidence = 0.0;
             JSONObject jarray = new JSONObject(str).getJSONObject("body").getJSONArray("FaceDetails").getJSONObject(0);   // JSONArray 생성
             JSONObject eyesopen = jarray.getJSONObject("EyesOpen");
             JSONArray emotion = jarray.getJSONArray("Emotions");
@@ -755,6 +757,15 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 }
                 else if("CALM".equals(type)){
                     calmconfidence = jObject.getDouble("Confidence");
+                }
+                else if("SAD".equals(type)){
+                    sadconfidence = jObject.getDouble("Confidence");
+                }
+                else if("ANGRY".equals(type)){
+                    angryconfidence = jObject.getDouble("Confidence");
+                }
+                else if("HAPPY".equals(type)){
+                    happyconfidence = jObject.getDouble("Confidence");
                 }
             }
 
@@ -783,7 +794,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             }
 
             //보복운전 상태감지
-            if(surprisedconfidence >= 80 && calmconfidence <= 20){
+            if(surprisedconfidence >= 20 && calmconfidence <= 50){
                 new KVSSpeech(this.getContext(),"보복운전은 심신건강에 해롭습니다.");
             }
 
@@ -805,5 +816,4 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             e.printStackTrace();
         }
     } // end doJSONParser()
-
 }

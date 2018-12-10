@@ -12,6 +12,8 @@ import android.view.View;
 
 public class FourthActivity extends AppCompatActivity{
     int tog = 0;
+
+
     protected void onCreate(Bundle saveInstanceState) {
         super.onCreate(saveInstanceState);
         setContentView(new MyGraphicView(this));
