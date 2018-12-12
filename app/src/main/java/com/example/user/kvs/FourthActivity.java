@@ -71,8 +71,8 @@ public class FourthActivity extends AppCompatActivity{
             //&&&&&100% 80% 60% 40% 20% 0%-> top = 120, 320, 520, 720, 920 1120으로 설정하면됨.&&&&&&
 
             paint.setColor(Color.RED);			//paint객체의 색상 다시 빨간색으로 지정
-            Rect rect1 = new Rect(50, 120, 50+50, 120+1000); //첫번째 바 (시작점의 xy좌표, 가로간격, 세로간격)
-            canvas.drawRect(rect1, paint);
+            Rect rect1 = new Rect(50, 120 + (int)(1000 * 1.1/ 100 + 0.5), 50+50, 120+1000); //첫번째 바 (시작점의 xy좌표, 가로간격, 세로간격)
+            canvas.drawRect(rect1, paint);          //해상도의 값을 소숫점으로 표현할 수 없다. 따라서 반올림해서 나타내자. 98.9퍼센트 일때의 막대그래프임.
 
             paint.setColor(Color.BLACK);
             paint.setTextSize(25);                              //글짜 표기

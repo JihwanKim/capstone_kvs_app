@@ -185,7 +185,6 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
             int cameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
             int writeExternalStoragePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-
             if (cameraPermission == PackageManager.PERMISSION_GRANTED
                     && writeExternalStoragePermission == PackageManager.PERMISSION_GRANTED) {
                 startCamera();
@@ -336,7 +335,6 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     private boolean isPreview = false;
 
     private AppCompatActivity mActivity;
-
 
     public CameraPreview(Context context, AppCompatActivity activity, int cameraID, SurfaceView surfaceView) {
         super(context);
@@ -662,8 +660,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 outStream.close();
                 goSend();   //php
 
-                Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length + " to "
-                        + outputFile.getAbsolutePath());
+                Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length + " to " + outputFile.getAbsolutePath());
 
                 mCamera.startPreview();
 
