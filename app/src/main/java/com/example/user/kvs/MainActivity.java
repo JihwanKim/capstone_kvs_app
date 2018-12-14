@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
                 //finish();
                 android.os.Process.killProcess(android.os.Process.myPid());
                 System.exit(1);
-                //Toast.makeText(MainActivity.this, "종료합니다.", Toast.LENGTH_SHORT).show();
             }
 
         });
