@@ -10,7 +10,6 @@ import android.widget.ImageView;
 public class MainActivity extends AppCompatActivity {
     Button btn0;    //시작 버튼
     Button btn6;    //사용자 설정 버튼
-    Button btn2;    //기록 버튼
     Button btn3;    //끝내기 버튼
     ImageView img;  //이미지 뷰
 
@@ -21,7 +20,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         btn0 = (Button)findViewById(R.id.button);
-        btn2 = (Button)findViewById(R.id.button2);
         btn3 = (Button)findViewById(R.id.button3);
         btn6 = (Button)findViewById(R.id.button6);
         img = (ImageView)findViewById(R.id.imageView);
@@ -34,11 +32,11 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        //기록 버튼에 대한 리스너
-        btn2.setOnClickListener(new View.OnClickListener() {
+        //사용자 설정버튼에 대한 리스너
+        btn6.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent2 = new Intent(MainActivity.this, FourthActivity.class);
+                Intent intent2 = new Intent(MainActivity.this, ThirdActivity.class);
                 startActivity(intent2);
             }
         });

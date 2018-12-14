@@ -23,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.hardware.Camera.Size;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -714,8 +715,8 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 recogdata = response.body().string();
+                Log.d(TAG, "onResponse: " + recogdata);
                 doJSONParser();
-                //Log.d(TAG, "onResponse: " + recogdata);
             }
         });
     }
@@ -733,7 +734,13 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         String str = recogdata;
 
         try {
-            JSONObject jarray = new JSONObject(str).getJSONObject("body").getJSONArray("FaceDetails").getJSONObject(0);   // JSONArray 생성
+            JSONArray jDetails = new JSONObject(str).getJSONObject("body").getJSONArray("FaceDetails");
+            Log.d(TAG, "결과 " + jDetails.length());
+            if (jDetails.length() == 0){
+                new KVSSpeech(this.getContext(),"살아는 계신가요?");
+                //추가할 곳
+            }
+            JSONObject jarray = jDetails.getJSONObject(0);   // JSONArray 생성
             JSONObject eyesopen = jarray.getJSONObject("EyesOpen");
             JSONArray emotion = jarray.getJSONArray("Emotions");
             JSONObject pose = jarray.getJSONObject("Pose");
@@ -806,8 +813,6 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             else{
                 tog3 = 0;
             }
-
-
 
         } catch (JSONException e) {
             e.printStackTrace();

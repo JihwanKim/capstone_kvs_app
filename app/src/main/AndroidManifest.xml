@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -22,13 +23,14 @@
         </activity>
         <activity
             android:name=".SecondActivity"
-            android:label="Second 액티비티">
+            android:label="시작">
         </activity>
 
         <activity
-            android:name=".FourthActivity"
-            android:label="기록 확인">
+            android:name=".ThirdActivity"
+            android:label="사용자 설정">
         </activity>
+
     </application>
 
 </manifest>
