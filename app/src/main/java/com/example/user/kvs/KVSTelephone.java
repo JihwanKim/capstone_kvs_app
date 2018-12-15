@@ -10,7 +10,7 @@ public class KVSTelephone {
     private static KVSTelephone INSTANCE;
     private final String phoneNumber;
 
-    private KVSTelephone(Context context) {
+    public KVSTelephone(Context context) {
         TelephonyManager tMgr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED

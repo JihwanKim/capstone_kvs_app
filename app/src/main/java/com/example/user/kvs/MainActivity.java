@@ -14,10 +14,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 public class MainActivity extends AppCompatActivity {
-    private Button btn0;    //시작 버튼
-    private Button btn6;    //사용자 설정 버튼
-    private Button btn3;    //끝내기 버튼
-    private ImageView img;  //이미지 뷰
+    private Button startButton;    //시작 버튼
+    private Button settingButton;    //사용자 설정 버튼
+    private Button endAppButton;    //끝내기 버튼
     private static final int PERMISSIONS_REQUEST_CODE = 100;
 
 
@@ -26,14 +25,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        btn0 = findViewById(R.id.button);
-        btn3 = findViewById(R.id.button3);
-        btn6 = findViewById(R.id.button6);
-        img = findViewById(R.id.imageView);
+        startButton = findViewById(R.id.button);
+        endAppButton = findViewById(R.id.button3);
+        settingButton = findViewById(R.id.button6);
 
         requestPermission();
         //시작 버튼에 대한 리스너
-        btn0.setOnClickListener(new View.OnClickListener() {
+        startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, CameraActivity.class);
@@ -41,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         //사용자 설정버튼에 대한 리스너
-        btn6.setOnClickListener(new View.OnClickListener() {
+        settingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent2 = new Intent(MainActivity.this, SettingActivity.class);
@@ -50,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //끝내기 버튼에 대한 리스너
-        btn3.setOnClickListener(new View.OnClickListener() {
+        endAppButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //finish();
@@ -88,40 +86,40 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-        @Override
-        public void onRequestPermissionsResult ( int requestCode, @NonNull String[] permissions,
-        @NonNull int[] grandResults){
-            if (requestCode == PERMISSIONS_REQUEST_CODE && grandResults.length == needPermissions.length) {
-                boolean permissionResult = true;
-                for (int result : grandResults) {
-                    if (result != PackageManager.PERMISSION_GRANTED) {
-                        permissionResult = false;
-                        break;
-                    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grandResults) {
+        if (requestCode == PERMISSIONS_REQUEST_CODE && grandResults.length == needPermissions.length) {
+            boolean permissionResult = true;
+            for (int result : grandResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    permissionResult = false;
+                    break;
                 }
-                if (permissionResult) {
-                    KVSTelephone.getInstance(this.getApplicationContext());
+            }
+            if (permissionResult) {
+                KVSTelephone.getInstance(this.getApplicationContext());
+            } else {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[0])
+                        && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[1])
+                        && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[2])) {
+                    Snackbar.make(findViewById(R.id.activity_main), "퍼미션이 거부되었습니다. 앱을 다시 실행하여 퍼미션을 허용해주세요. ",
+                            Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            finish();
+                        }
+                    }).show();
                 } else {
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[0])
-                            && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[1])
-                            && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[2])) {
-                        Snackbar.make(findViewById(R.id.activity_main), "퍼미션이 거부되었습니다. 앱을 다시 실행하여 퍼미션을 허용해주세요. ",
-                                Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                finish();
-                            }
-                        }).show();
-                    } else {
-                        Snackbar.make(findViewById(R.id.activity_main), "설정(앱 정보)에서 퍼미션을 허용해야 합니다. ",
-                                Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                finish();
-                            }
-                        }).show();
-                    }
+                    Snackbar.make(findViewById(R.id.activity_main), "설정(앱 정보)에서 퍼미션을 허용해야 합니다. ",
+                            Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            finish();
+                        }
+                    }).show();
                 }
             }
         }
     }
+}
