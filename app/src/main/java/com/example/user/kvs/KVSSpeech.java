@@ -10,7 +10,11 @@ public class KVSSpeech {
     final private String speak;
     public KVSSpeech(Context cont, String speakStr) {
         if (LAST_INSTANCE!=null){
-            LAST_INSTANCE.textToSpeech1.stop();
+            try{
+                LAST_INSTANCE.textToSpeech1.stop();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
         }
         LAST_INSTANCE = this;
 
