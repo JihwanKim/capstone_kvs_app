@@ -139,33 +139,21 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
         // 런타임 퍼미션 완료될때 까지 화면에서 보이지 않게 해야합니다.
         surfaceView.setVisibility(View.GONE);
 
+        final Timer timer = new Timer();        //0.5초 주기로 자동촬영을 위한 타이머메소드 구현
 
-        final Timer timer = new Timer();        //3초 주기로 자동촬영을 위한 타이머메소드 구현
-        /*final TimerTask tt = new TimerTask() {
-            @Override
-            public void run() {
-                mCameraPreview.takePicture();   //직접적으로 사진을 촬영하는 메소드임
-            }
-        };*/
-
-
-        button.setOnClickListener(new View.OnClickListener() {      //시작 버튼
+        button.setOnClickListener(new View.OnClickListener() {      //Start 버튼
             @Override
             public void onClick(View v) {
                 tog = 1;
-                tt = timerTaskMaker();              //일시적으로 계속해서 타이머를 생성해주기.
-                timer.schedule(tt, 0, 3000);    //타이머를 계속만들어주지않으면 그냥 타이머텍스크 캔슬 시에 없어져서 오류발생함.
-
-                //timer.schedule(tt, 0, 3000);        //run()메소드가 주기적으로 실행됨. 시작버튼 시 3초주기 자동사진촬영
-                //mCameraPreview.takePicture();     //직접적인 사진촬영 메소드.
+                tt = timerTaskMaker();  //버튼입력 시 타이머를 생성해주기. -> cancel() 일어날 경우 타이머가 완전히 지워짐!
+                timer.schedule(tt, 0, 500);     //0.5초 주기 타이머실행
             }
         });
-
-        button1.setOnClickListener(new View.OnClickListener() {
+        button1.setOnClickListener(new View.OnClickListener() {     //Stop 버튼
             @Override
             public void onClick(View v) {
                 tog = 0;
-                tt.cancel();            //종료 버튼 시 3초주기 자동사진촬영 종료
+                tt.cancel();            //cancel()을 이용해 타이머를 종료시킨다.
             }
         });
 
@@ -180,18 +168,17 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
                 }
             }
         });
-
+        //지원하는 디바이스에 카메라가 있다면
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-
             int cameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-            int writeExternalStoragePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
+            int writeExternalStoragePermission =
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            //이 부분이 카메라 사용권한을 설정하고 외부저장소 갤러리 사용권한이 설정 되었는지 확인 하는 부분
             if (cameraPermission == PackageManager.PERMISSION_GRANTED
                     && writeExternalStoragePermission == PackageManager.PERMISSION_GRANTED) {
                 startCamera();
-
-
-            }else {
+            }
+            else {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])
                         || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[1])) {
 
@@ -205,19 +192,15 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
                                     PERMISSIONS_REQUEST_CODE);
                         }
                     }).show();
-
-
-                } else {
+                }
+                else {
                     // 2. 사용자가 퍼미션 거부를 한 적이 없는 경우에는 퍼미션 요청을 바로 합니다.
-                    // 요청 결과는 onRequestPermissionResult에서 수신됩니다.
                     ActivityCompat.requestPermissions( this, REQUIRED_PERMISSIONS,
                             PERMISSIONS_REQUEST_CODE);
                 }
-
             }
-
         }
-        else {
+        else {  //우리가 사용하는 디바이스에 카메라가 지원하지 않는 경우 Snackbar를 이용하여 사용자에게 전달
             final Snackbar snackbar = Snackbar.make(mLayout, "디바이스가 카메라를 지원하지 않습니다.",
                     Snackbar.LENGTH_INDEFINITE);
             snackbar.setAction("확인", new View.OnClickListener() {
@@ -228,7 +211,6 @@ public class SecondActivity extends AppCompatActivity implements ActivityCompat.
             });
             snackbar.show();
         }
-        //만들어진 결과값을 받아오는 부분(myRequest가 결과값들임)
     }
 
     public TimerTask timerTaskMaker(){
@@ -635,16 +617,12 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         }
     };
 
-
-
     private class SaveImageTask extends AsyncTask<byte[], Void, Void> {
         @Override
         protected Void doInBackground(byte[]... data) {
             FileOutputStream outStream = null;
 
-
             try {
-
                 File path = new File (Environment.getExternalStorageDirectory().getAbsolutePath() + "/camtest");
                 if (!path.exists()) {
                     path.mkdirs();
@@ -665,13 +643,10 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
                 mCamera.startPreview();
 
-
                 // 갤러리에 반영
                 Intent mediaScanIntent = new Intent( Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                 mediaScanIntent.setData(Uri.fromFile(outputFile));
                 getContext().sendBroadcast(mediaScanIntent);
-
-
 
                 try {
                     mCamera.setPreviewDisplay(mHolder);
@@ -690,7 +665,6 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
             return null;
         }
-
     }
 
     private void goSend(){
@@ -714,9 +688,9 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                recogdata = response.body().string();
-                Log.d(TAG, "onResponse: " + recogdata);
-                doJSONParser();
+                recogdata = response.body().string();              //안면의 상태와 감정데이터값을 받는 부분(String값으로 받음)
+                Log.d(TAG, "onResponse: " + recogdata);     //String값으로 받는 데이터를 로그를 이용해 확인해봄.
+                doJSONParser();                                     //JSON parsing를 위한 메소드
             }
         });
     }
@@ -732,7 +706,6 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     void doJSONParser(){
         StringBuffer sb = new StringBuffer();
         String str = recogdata;
-
         try {
             JSONArray jDetails = new JSONObject(str).getJSONObject("body").getJSONArray("FaceDetails");
             Log.d(TAG, "결과 " + jDetails.length());
@@ -749,11 +722,11 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             String eyesopentype = eyesopen.getString("Value");
             Double eyesopenconfidence = eyesopen.getDouble("Confidence");
 
-            //전방주시
+            //전방주시(얼굴의 각도에 해당함)
             Double yaw = pose.getDouble("Yaw");         //좌우
             Double pitch = pose.getDouble("Pitch");     //위아래
 
-            for(int i = 0; i < emotion.length(); i++){  //이모션내부 배열에서 놀람, 차분함값 뽑아내기
+            for(int i = 0; i < emotion.length(); i++){  //이모션배열의 내부를 순회하면 해당 값 추출
                 JSONObject jObject = emotion.getJSONObject(i);
                 String type = jObject.getString("Type");
                 if("SURPRISED".equals(type)){
@@ -773,8 +746,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 }
             }
 
-            //좌우전방주시태만
-            if(yaw > 35.0 || yaw < -35.0){
+            if(yaw > 35.0 || yaw < -35.0){            //좌우전방주시태만
                 tog1++;
                 if(tog1 == 2){
                     new KVSSpeech(this.getContext(),"전방을 주시해 주십시오.");
@@ -784,9 +756,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             else{
                 tog1 = 0;
             }
-
-            //아래전방주시태만
-            if(pitch < 0){
+            if(pitch < 0){            //아래전방주시태만
                 tog2++;
                 if(tog2 == 2){
                     new KVSSpeech(this.getContext(),"운전중에 주무시는 건가요? 전방을 주시해야합니다.");
