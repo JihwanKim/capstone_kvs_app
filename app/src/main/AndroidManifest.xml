@@ -22,12 +22,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SecondActivity"
+            android:name=".CameraActivity"
             android:label="시작">
         </activity>
 
         <activity
-            android:name=".ThirdActivity"
+            android:name=".SettingActivity"
             android:label="사용자 설정">
         </activity>
 
