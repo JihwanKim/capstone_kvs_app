@@ -70,61 +70,58 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_PHONE_STATE)
                 != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.READ_PHONE_STATE)) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[0])
+                    && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[1])
+                    && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[2])) {
+                Snackbar.make(findViewById(R.id.activity_main), "앱을 실행하기 위해선 권한이 필요합니다.",
+                        Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ActivityCompat.requestPermissions(MainActivity.this, needPermissions,
+                                PERMISSIONS_REQUEST_CODE);
+                    }
+                }).show();
             } else {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[0])
-                        && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[1])
-                        && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[2])) {
-                    Snackbar.make(findViewById(R.id.activity_main), "앱을 실행하기 위해선 권한이 필요합니다..",
-                            Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            ActivityCompat.requestPermissions(MainActivity.this, needPermissions,
-                                    PERMISSIONS_REQUEST_CODE);
-                        }
-                    }).show();
-                } else {
-                    ActivityCompat.requestPermissions(this, needPermissions,
-                            PERMISSIONS_REQUEST_CODE);
-                }
+                ActivityCompat.requestPermissions(this, needPermissions,
+                        PERMISSIONS_REQUEST_CODE);
             }
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grandResults) {
-        if (requestCode == PERMISSIONS_REQUEST_CODE && grandResults.length == needPermissions.length) {
-            boolean permissionResult = true;
-            for (int result : grandResults) {
-                if (result != PackageManager.PERMISSION_GRANTED) {
-                    permissionResult = false;
-                    break;
+        @Override
+        public void onRequestPermissionsResult ( int requestCode, @NonNull String[] permissions,
+        @NonNull int[] grandResults){
+            if (requestCode == PERMISSIONS_REQUEST_CODE && grandResults.length == needPermissions.length) {
+                boolean permissionResult = true;
+                for (int result : grandResults) {
+                    if (result != PackageManager.PERMISSION_GRANTED) {
+                        permissionResult = false;
+                        break;
+                    }
                 }
-            }
-            if (permissionResult) {
-                KVSTelephone.getInstance(this.getApplicationContext());
-            } else {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[0])
-                        && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[1])
-                        && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[2])) {
-                    Snackbar.make(findViewById(R.id.activity_main), "퍼미션이 거부되었습니다. 앱을 다시 실행하여 퍼미션을 허용해주세요. ",
-                            Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            finish();
-                        }
-                    }).show();
+                if (permissionResult) {
+                    KVSTelephone.getInstance(this.getApplicationContext());
                 } else {
-                    Snackbar.make(findViewById(R.id.activity_main), "설정(앱 정보)에서 퍼미션을 허용해야 합니다. ",
-                            Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            finish();
-                        }
-                    }).show();
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[0])
+                            && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[1])
+                            && ActivityCompat.shouldShowRequestPermissionRationale(this, needPermissions[2])) {
+                        Snackbar.make(findViewById(R.id.activity_main), "퍼미션이 거부되었습니다. 앱을 다시 실행하여 퍼미션을 허용해주세요. ",
+                                Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                finish();
+                            }
+                        }).show();
+                    } else {
+                        Snackbar.make(findViewById(R.id.activity_main), "설정(앱 정보)에서 퍼미션을 허용해야 합니다. ",
+                                Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                finish();
+                            }
+                        }).show();
+                    }
                 }
             }
         }
     }
-}
