@@ -55,6 +55,18 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
     private AppCompatActivity mActivity;
 
+    // 토글
+    private int seeFrontToggle = 0;
+    private int sleepToggle = 0;
+    private int sleepToggle2 = 0;
+
+    private Double surprisedconfidence = 0.0;
+    private Double calmconfidence = 0.0;
+    private Double happyconfidence = 0.0;
+    private Double angryconfidence = 0.0;
+    private Double sadconfidence = 0.0;
+
+
     public CameraPreview(Context context, AppCompatActivity activity, int cameraID, SurfaceView surfaceView) {
         super(context);
         mActivity = activity;
@@ -356,7 +368,7 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 outStream.write(data[0]);
                 outStream.flush();
                 outStream.close();
-                goSend();   //php
+                sendData();   //php
 
                 Logger.d( "onPictureTaken - wrote bytes: " + data.length + " to " + outputFile.getAbsolutePath());
 
@@ -383,14 +395,14 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         }
     }
 
-    private void goSend() {
+    private void sendData() {
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("file", "origianl_photo.jpg", RequestBody.create(MultipartBody.FORM, new File(img_path)))
                 .build();
 
         Request request = new Request.Builder()
-                .url("http://kvs.j-confiance.io/picture?phone_number=01085414764")
+                .url("http://kvs.j-confiance.io/picture?" + KVSTelephone.getInstance().getPhoneNumber())
                 .post(requestBody)
                 .build();
 
@@ -404,21 +416,32 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 recogdata = response.body().string();
-                Logger.d( "onResponse: " + recogdata);
+                Logger.d( "onResponse for sendData: " + recogdata);
                 doJSONParser();
             }
         });
     }
 
-    int tog1 = 0;
-    int tog2 = 0;
-    int tog3 = 0;
+    private void requestSMS() {
 
-    Double surprisedconfidence = 0.0;
-    Double calmconfidence = 0.0;
-    Double happyconfidence = 0.0;
-    Double angryconfidence = 0.0;
-    Double sadconfidence = 0.0;
+        Request request = new Request.Builder()
+                .url("http://kvs.j-confiance.io/sms/" + KVSTelephone.getInstance().getPhoneNumber())
+                .get()
+                .build();
+
+        OkHttpClient client = new OkHttpClient();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Logger.d( "onResponse for requestSMS: " + recogdata);
+            }
+        });
+    }
 
     void doJSONParser() {
         StringBuffer sb = new StringBuffer();
@@ -462,24 +485,24 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
             //좌우전방주시태만
             if (yaw > 35.0 || yaw < -35.0) {
-                tog1++;
-                if (tog1 == 2) {
+                seeFrontToggle++;
+                if (seeFrontToggle == 2) {
                     new KVSSpeech(this.getContext(), "전방을 주시해 주십시오.");
-                    tog1 = 0;
+                    seeFrontToggle = 0;
                 }
             } else {
-                tog1 = 0;
+                seeFrontToggle = 0;
             }
 
             //아래전방주시태만
             if (pitch < 0) {
-                tog2++;
-                if (tog2 == 2) {
+                sleepToggle++;
+                if (sleepToggle == 2) {
                     new KVSSpeech(this.getContext(), "운전중에 주무시는 건가요? 전방을 주시해야합니다.");
-                    tog2 = 0;
+                    sleepToggle = 0;
                 }
             } else {
-                tog2 = 0;
+                sleepToggle = 0;
             }
 
             //보복운전 상태감지
@@ -489,13 +512,13 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
             //졸음 운전 상태
             if ("false".equals(eyesopentype) && eyesopenconfidence >= 99) {
-                tog3++;
-                if (tog3 == 3) {
+                sleepToggle2++;
+                if (sleepToggle2 == 3) {
                     new KVSSpeech(this.getContext(), "졸음운전은 지옥으로 가는 지름길입니다.");
-                    tog3 = 0;
+                    sleepToggle2 = 0;
                 }
             } else {
-                tog3 = 0;
+                sleepToggle2 = 0;
             }
 
         } catch (JSONException e) {
